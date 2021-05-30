@@ -161,3 +161,20 @@ uint8_t GPIO_read_digital(GPIO_TypeDef *port, const uint8_t pin) {
 uint16_t GPIO_read_analog(GPIO_TypeDef *port, const uint8_t pin) {
     // TODO
 }
+
+/**
+ * Lock GPIO configuration 
+ *
+ * @param port - Port of GPIO
+ * @param pin - pin to lock
+ *
+ * @return GPIO_PIN_TOO_HIGH if port is too high, GPIO_OK on success
+ */
+gpio_err_t GPIO_lock(GPIO_TypeDef *port, const uint8_t pin) {
+    if ( pin > 15 ) {
+        return GPIO_PIN_TOO_HIGH;
+    }
+    port->LCKR |= (1 << pin); 
+    return GPIO_OK;
+}
+

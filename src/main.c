@@ -6,7 +6,6 @@
 #include "stm32/f4/rcc/rcc.h"
 
 
-
 int main(void) {
     //set_system_clock(); 
     GPIO_enable(GPIOB, 8, GPIO_OUTPUT);        
@@ -26,11 +25,9 @@ int main(void) {
         //USART_write(USART2, 'A');
         USART_printf(USART2, "This is a value: %.3f\n", 2.123);
         USART_printf(USART2, "System Core Clock: %ld\n", test->ahb_freq);
-        USART_printf(USART2, "USART has input: %d\n", USART_has_input(USART2));
+        //USART_printf(USART2, "USART has input: %d\n", USART_has_input(USART2));
         //USART_scanf(USART2, usart_test);
         //USART_printf(USART2, "You typed: %s\n", usart_test);
         delayMs(500);
     }
 }
-
-

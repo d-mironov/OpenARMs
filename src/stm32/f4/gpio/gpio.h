@@ -80,6 +80,7 @@ uint8_t GPIO_read_digital(GPIO_TypeDef *port, const uint8_t pin);
 uint16_t GPIO_read_analog(GPIO_TypeDef *port, const uint8_t pin);
 gpio_err_t GPIO_select_alternate(GPIO_TypeDef *port, const uint8_t pin, const uint8_t af);
 
+gpio_err_t GPIO_lock(GPIO_TypeDef *port, const uint8_t pin);
 
 
 
