@@ -70,7 +70,6 @@ typedef enum gpio_err {
 
 
 
-void ADC1_enable(void);
 gpio_err_t GPIO_enable(GPIO_TypeDef *port, const uint8_t pin_num, gpio_mode_t mode);
 gpio_err_t GPIO_settings(GPIO_TypeDef *port, const uint8_t pin_num, const uint8_t speed, const uint8_t pull_up_down);
 
