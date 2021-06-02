@@ -18,6 +18,7 @@
 #define GPIO_PULL_UP            0x01
 #define GPIO_PULL_DOWN          0x02
 
+// Alternate function selection of GPIO
 #define GPIO_AF00       0x00
 #define GPIO_AF01       0x01
 #define GPIO_AF02       0x02

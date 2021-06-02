@@ -1,3 +1,12 @@
+/*
+ * TODO: 
+ *   - [TESTING] Clock enabling on AHB1, AHB2, APB1, APB2
+ *   - [TESTING] resetting Peripheral clocks
+ *   - [ ] Clock configuration for STM32F4
+ *   - [ ] Clock Control register selection
+ *   - [ ] PLL configuration 
+ *   - [ ] RCC_CFGR configuration
+ */
 #ifndef _STM_RCC_H
 #define _STM_RCC_H
 
@@ -46,6 +55,47 @@
 #define RCC_AHB_DIV_256     0x08
 #define RCC_AHB_DIV_512     0x09
 
+
+#define RCC_AHB1_DMA2     (1U << 22)
+#define RCC_AHB1_DMA1     (1U << 21)
+#define RCC_AHB1_CRC      (1U << 12)
+#define RCC_AHB1_GPIOH    (1U << 7)
+#define RCC_AHB1_GPIOE    (1U << 4)
+#define RCC_AHB1_GPIOD    (1U << 3)
+#define RCC_AHB1_GPIOC    (1U << 2)
+#define RCC_AHB1_GPIOB    (1U << 1)
+#define RCC_AHB1_GPIOA    (1U << 0)
+
+#define RCC_APB1_PWR      (1U << 28)
+#define RCC_APB1_I2C3     (1U << 23)
+#define RCC_APB1_I2C2     (1U << 22)
+#define RCC_APB1_I2C1     (1U << 21)
+#define RCC_APB1_USART2   (1U << 17)
+#define RCC_APB1_SPI3     (1U << 15)
+#define RCC_APB1_SPI2     (1U << 14)
+#define RCC_APB1_WWDG     (1U << 11)
+#define RCC_APB1_TIM5     (1U << 3)
+#define RCC_APB1_TIM4     (1U << 2)
+#define RCC_APB1_TIM3     (1U << 1)
+#define RCC_APB1_TIM2     (1U << 0)
+
+#define RCC_APB2_SPI5     (1U << 20)
+#define RCC_APB2_TIM11    (1U << 18)
+#define RCC_APB2_TIM10    (1U << 17)
+#define RCC_APB2_TIM9     (1U << 16)
+#define RCC_APB2_SYSCF    (1U << 14)
+#define RCC_APB2_SPI4     (1U << 13)
+#define RCC_APB2_SPI1     (1U << 12)
+#define RCC_APB2_SDIO     (1U << 11)
+#define RCC_APB2_ADC1     (1U << 8)
+#define RCC_APB2_USART6   (1U << 5)
+#define RCC_APB2_USART1   (1U << 4)
+#define RCC_APB2_TIM1     (1U << 0)
+
+#define RCC_ENABLE          1U
+#define RCC_DISABLE         0U
+
+
 #define RCC_25MHZ_TO_84MHZ  rcc_hse_25_mhz_to_84_mhz
 
 typedef enum {
@@ -85,6 +135,13 @@ typedef struct clock_conf {
     uint32_t usb_swio_freq;
 } clock_t;
 
+typedef enum rcc_clock_port {
+    RCC_AHB1,
+    RCC_AHB2,
+    RCC_APB1,
+    RCC_APB2,
+} rcc_clock_port_t;
+
 static const clock_t rcc_hse_25_mhz_to_84_mhz = {
     .hse_clock = 25000000,
     .pll_source = PLL_SRC_HSE,
@@ -104,6 +161,9 @@ static const clock_t rcc_hse_25_mhz_to_84_mhz = {
 
 
 void RCC_system_clock_config(clock_t *clock);
+
+void RCC_periphclock_select(rcc_clock_port_t port, uint32_t periph, uint8_t enable);
+
 
 #endif
 
