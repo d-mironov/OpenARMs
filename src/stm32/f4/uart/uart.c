@@ -22,9 +22,9 @@ usart_err_t USART_init(USART_TypeDef *USARTx, uint32_t baud, uint32_t mode, uint
         GPIO_enable(USART2_PORT, USART2_TX, GPIO_ALTERNATE);
         GPIO_select_alternate(USART2_PORT, USART2_RX, GPIO_AF07);
         GPIO_select_alternate(USART2_PORT, USART2_TX, GPIO_AF07);
+        RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
         USARTx->BRR = USART_compute_div(USART2_CLK, baud);
     }
-    RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
 
     USARTx->CR1 = 0x00;
     USARTx->CR2 = 0x00;
@@ -47,14 +47,7 @@ uint16_t USART_compute_div(uint32_t periph_clk, uint32_t baud) {
 }
 
 void USART_write(USART_TypeDef *USARTx, int ch) {
-    volatile int i = 0;
-    while(!(USARTx->SR & USART_SR_TXE)) {
-        if (i >= USART_TXE_TIMEOUT) {
-            return;
-        }
-        i++;
-    }
-
+    while(!(USARTx->SR & USART_SR_TXE));
     USARTx->DR = (ch & 0xFF);
 }
 
