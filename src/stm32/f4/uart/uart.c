@@ -57,6 +57,7 @@ uint8_t USART_read(USART_TypeDef *USARTx) {
 }
 
 
+
 void USART_printf(USART_TypeDef *USARTx, const char *format, ...) {
     char buff[USART_CHAR_BUFFER_LEN];
 
@@ -116,5 +117,16 @@ void USART_interrupt_disable(USART_TypeDef *USARTx) {
         NVIC_DisableIRQ(USART2_IRQn);
     } else if (USARTx == USART6) {
         NVIC_DisableIRQ(USART6_IRQn);
+    }
+}
+
+void USART_disable(USART_TypeDef *USARTx) {
+    USARTx->CR1 &= ~(USART_CR1_UE);
+    if ( USARTx == USART1) {
+        RCC->APB1RSTR |= RCC_APB2RSTR_USART1RST;
+    } else if ( USARTx == USART2 ) {
+        RCC->APB2ENR |= RCC_APB1RSTR_USART2RST;
+    } else if ( USARTx == USART6 ) {
+        RCC->APB1RSTR |= RCC_APB2RSTR_USART6RST;
     }
 }

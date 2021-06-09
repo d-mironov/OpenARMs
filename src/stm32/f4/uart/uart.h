@@ -95,5 +95,7 @@ bool USART_has_input(USART_TypeDef *USARTx);
 void USART_interrupt_enable(USART_TypeDef *USARTx);
 void USART_interrupt_disable(USART_TypeDef *USARTx);
 
+void USART_disable(USART_TypeDef *USARTx);
+
 
 #endif
