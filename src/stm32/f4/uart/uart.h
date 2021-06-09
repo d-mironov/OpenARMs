@@ -1,3 +1,25 @@
+/* OpenARMs usart.c - USART API
+ * @author: SL7
+ *
+ * Changelog v1:
+ *   |__v1.1
+ *   |    |__ added basic functionality
+ *   |    |__ added read function
+ *   |    |__ added write function
+ *   |
+ *   |__v1.2
+ *   |    |__ added USART_printf
+ *   |    |__ added USART_scanf
+ *   |
+ *   |__v1.3
+ *   |    |__ 
+ *
+ * TODO v1.3:
+ * - [ ] improve scanf function
+ * - [ ] add interrupt configuration and functionality
+ *
+ */
+
 #ifndef _STM_UART_H
 #define _STM_UART_H
 
@@ -69,6 +91,9 @@ uint8_t USART_read(USART_TypeDef *USARTx);
 void USART_scanf(USART_TypeDef *USARTx, char *buff);
 
 bool USART_has_input(USART_TypeDef *USARTx);
+
+void USART_interrupt_enable(USART_TypeDef *USARTx);
+void USART_interrupt_disable(USART_TypeDef *USARTx);
 
 
 #endif

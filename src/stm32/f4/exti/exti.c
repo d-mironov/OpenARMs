@@ -1,5 +1,6 @@
 #include "exti.h"
 #include "../gpio/gpio.h"
+#include "../uart/uart.h"
 #include <stm32f4xx.h>
 
 
@@ -42,6 +43,28 @@ exti_err_t EXTI_unmask(uint32_t lines) {
 }
 
 
+exti_err_t EXTI_nvic_enable_irq(uint8_t pin) {
+    if (pin == 0) {
+        NVIC_EnableIRQ(EXTI0_IRQn);
+    } else if (pin == 1) {
+        NVIC_EnableIRQ(EXTI1_IRQn);
+    } else if (pin == 2) {
+        NVIC_EnableIRQ(EXTI2_IRQn);
+    } else if (pin == 3) {
+        NVIC_EnableIRQ(EXTI3_IRQn);
+    } else if (pin == 4) {
+        NVIC_EnableIRQ(EXTI4_IRQn);
+    } else if (pin >= 5 && pin <= 9) {
+        NVIC_EnableIRQ(EXTI9_5_IRQn);
+    } else if (pin >= 10 && pin <= 15) {
+        NVIC_EnableIRQ(EXTI15_10_IRQn);
+    } else {
+        return EXTI_PIN_TOO_HIGH;
+    }
+    return EXTI_OK;
+}
+
+
 exti_err_t EXTI_attach_gpio(GPIO_TypeDef *port, uint8_t pin, exti_trigger_t trigger) {
     if (pin > 15) {
         return EXTI_PIN_TOO_HIGH;
@@ -49,26 +72,28 @@ exti_err_t EXTI_attach_gpio(GPIO_TypeDef *port, uint8_t pin, exti_trigger_t trig
 
     __disable_irq();
     
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
     GPIO_enable(port, pin, GPIO_INPUT);
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
 
     // uint8_t cr = (pin / 4) % 4;
     uint8_t exti_port = ((uint64_t) port - AHB1PERIPH_BASE) / 0x00400UL;
     // Calculations for port and pin on the EXTI line selection
     SYSCFG->EXTICR[(pin/4) % 4] |= (exti_port << ((pin % SYSCFG_EXTI_PORTS_PER_REG) * SYSCFG_EXTI_BITNUM)); 
+    
+    if ( EXTI_unmask( (1 << pin) ) != EXTI_OK) {
+        __enable_irq();
+        return EXTI_LINES_RESERVED;
+    }
 
     if ( EXTI_select_trigger((1<<pin), trigger) != EXTI_OK ) {
         __enable_irq();
         return EXTI_LINES_RESERVED;
     }
 
-    if ( EXTI_unmask( (1 << pin) ) != EXTI_OK) {
-        __enable_irq();
-        return EXTI_LINES_RESERVED;
-    }
+    EXTI_nvic_enable_irq(pin);
 
-    // TODO: enable specific IRQ in NVIC
     __enable_irq();
     return EXTI_OK;
 }
+
 

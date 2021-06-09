@@ -8,7 +8,6 @@
 
 
 usart_err_t USART_init(USART_TypeDef *USARTx, uint32_t baud, uint32_t mode, uint32_t stop_bits, uint32_t parity_enable, uint32_t parity_even_odd) {
-
     if (USARTx == USART1) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
         GPIO_enable(USART1_PORT, USART1_RX, GPIO_ALTERNATE); 
@@ -98,4 +97,24 @@ bool USART_has_input(USART_TypeDef *USARTx) {
         return true;
     }
     return false;
+}
+
+void USART_interrupt_enable(USART_TypeDef *USARTx) {
+    if (USARTx == USART1) {
+        NVIC_EnableIRQ(USART1_IRQn);
+    } else if (USARTx == USART2) {
+        NVIC_EnableIRQ(USART2_IRQn);
+    } else if (USARTx == USART6) {
+        NVIC_EnableIRQ(USART6_IRQn);
+    }
+}
+
+void USART_interrupt_disable(USART_TypeDef *USARTx) {
+    if (USARTx == USART1) {
+        NVIC_DisableIRQ(USART1_IRQn);
+    } else if (USARTx == USART2) {
+        NVIC_DisableIRQ(USART2_IRQn);
+    } else if (USARTx == USART6) {
+        NVIC_DisableIRQ(USART6_IRQn);
+    }
 }
