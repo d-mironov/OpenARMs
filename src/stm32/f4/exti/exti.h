@@ -2,6 +2,7 @@
 #define _STM_EXTI_H
 
 #include <stm32f4xx.h>
+#include "../gpio/gpio.h"
 
 #define EXTI00      (1U << 0)
 #define EXTI01      (1U << 1)
@@ -47,7 +48,7 @@ typedef enum exti_err {
 
 exti_err_t EXTI_select_trigger(uint32_t lines, exti_trigger_t trigger);
 exti_err_t EXTI_unmask(uint32_t lines);
-exti_err_t EXTI_attach_gpio(GPIO_TypeDef *port, uint8_t pin, exti_trigger_t trigger);
+exti_err_t EXTI_attach_gpio(const gpio_pin_t pin, exti_trigger_t trigger);
 exti_err_t EXTI_nvic_enable_irq(uint8_t pin);
 
 

@@ -18,23 +18,30 @@ void ADC1_enable(void) {
  *
  * @return GPIO_OK on success, GPIO_PIN_TOO_HIGH on `pin_num`>15
  */
-gpio_err_t GPIO_enable(GPIO_TypeDef *port, const uint8_t pin_num, gpio_mode_t mode) {
-    if ( pin_num > 15 ) {
+gpio_err_t GPIO_enable(const gpio_pin_t pin, gpio_mode_t mode) {
+    if ( pin > PH15 ) {
         return GPIO_PIN_TOO_HIGH;
     }
+    GPIO_TypeDef *port;
 
-    if ( GPIOA == port ) {
+    if ( pin < PB0 ) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-    } else if ( GPIOB == port ) {
+        port = GPIOA;
+    } else if ( pin < PC0 ) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
-    } else if ( GPIOC == port ) {
+        port = GPIOB;
+    } else if ( pin < PD0 ) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
-    } else if ( GPIOD == port ) {
+        port = GPIOC;
+    } else if ( pin < PE0) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
-    } else if ( GPIOE == port ) {
+        port = GPIOD;
+    } else if ( pin < PH0 ) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;
-    } else if ( GPIOH == port ) {
+        port = GPIOE;
+    } else if ( pin <= PH15 ) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;
+        port = GPIOH;
     }
 
     if (mode == GPIO_ANALOG) {
@@ -42,15 +49,15 @@ gpio_err_t GPIO_enable(GPIO_TypeDef *port, const uint8_t pin_num, gpio_mode_t mo
     }
 
     /* Reset the old mode */
-    port->MODER &= ~(3 << (pin_num * 2)); 
+    port->MODER &= ~(3 << ((pin % PINS_PER_PORT) * 2)); 
     /* Set the new mode */
-    port->MODER |= (mode << (pin_num * 2));
+    port->MODER |= (mode << ((pin % PINS_PER_PORT) * 2));
     return GPIO_OK;
 }
 
 
-gpio_err_t GPIO_select_alternate(GPIO_TypeDef *port, const uint8_t pin, const uint8_t af) {
-    if ( pin > 15 ) {
+gpio_err_t GPIO_select_alternate(const gpio_pin_t pin, const uint8_t af) {
+    if ( pin > PH15 ) {
         return GPIO_PIN_TOO_HIGH;
     }
     if (af > 15) {
@@ -62,13 +69,17 @@ gpio_err_t GPIO_select_alternate(GPIO_TypeDef *port, const uint8_t pin, const ui
         return GPIO_ALTERNATE_NOT_SELECTED;
     }
     */
-
-    if ( pin <= 7 ){
-        port->AFR[0] &= ~(15 << (pin * 4));
-        port->AFR[0] |= (af << (pin * 4));
+    uint8_t raw_pin = pin % PINS_PER_PORT;
+    GPIO_TypeDef *port = _GPIO_fetch_port(pin);
+    if (port == NULL) {
+        return GPIO_PIN_TOO_HIGH;
+    }
+    if ( raw_pin <= 7 ){
+        port->AFR[0] &= ~(15 << (raw_pin * 4));
+        port->AFR[0] |= (af << (raw_pin * 4));
     } else {
-        port->AFR[1] &= ~(15 << (pin * 4));
-        port->AFR[1] |= (af << (pin * 4));
+        port->AFR[1] &= ~(15 << (raw_pin * 4));
+        port->AFR[1] |= (af << (raw_pin * 4));
     }
 
     return GPIO_OK;
@@ -86,15 +97,23 @@ gpio_err_t GPIO_select_alternate(GPIO_TypeDef *port, const uint8_t pin, const ui
  *
  * @return GPIO_OK on success, GPIO_PIN_TOO_HIGH when `pin`>15
  */
-gpio_err_t GPIO_settings(GPIO_TypeDef *port, const uint8_t pin, const uint8_t speed, const uint8_t pull_up_down) {
-    if (pin > 15) {
+gpio_err_t GPIO_settings(const gpio_pin_t pin, const uint8_t speed, const uint8_t pull_up_down, const uint8_t otyper) {
+    if (pin > PH15) {
         return GPIO_PIN_TOO_HIGH;
     }
-    port->OSPEEDR &=    (3 << (pin*2));
-    port->OSPEEDR |=    (speed << (pin*2));
     
-    port->PUPDR &=      (3 << (pin*2));
-    port->PUPDR |=      (pull_up_down << (pin*2));
+    GPIO_TypeDef *port = _GPIO_fetch_port(pin);
+    if (port == NULL) {
+        return GPIO_PIN_TOO_HIGH;
+    }
+    port->OSPEEDR &=    ~(3 << ((pin & PINS_PER_PORT)*2));
+    port->OSPEEDR |=    (speed << ((pin % PINS_PER_PORT)*2));
+
+    port->OTYPER &=     ~(1 << (pin % PINS_PER_PORT));
+    port->OTYPER |=     (otyper << (pin % PINS_PER_PORT));
+    
+    port->PUPDR &=      ~(3 << ((pin % PINS_PER_PORT)*2));
+    port->PUPDR |=      (pull_up_down << ((pin % PINS_PER_PORT)*2));
     
     return GPIO_OK;
 }
@@ -109,8 +128,12 @@ gpio_err_t GPIO_settings(GPIO_TypeDef *port, const uint8_t pin, const uint8_t sp
  *
  * @return GPIO_OK
  */
-gpio_err_t GPIO_toggle(GPIO_TypeDef *port, const uint8_t pin) {
-    port->ODR ^= (1 << pin);
+gpio_err_t GPIO_toggle(const gpio_pin_t pin) {
+    GPIO_TypeDef *port = _GPIO_fetch_port(pin);
+    if (port == NULL) {
+        return GPIO_PIN_TOO_HIGH;
+    }
+    port->ODR ^= (1 << (pin % PINS_PER_PORT));
     return GPIO_OK;
 }
 
@@ -125,11 +148,15 @@ gpio_err_t GPIO_toggle(GPIO_TypeDef *port, const uint8_t pin) {
  *
  * @return GPIO_OK
  */
-gpio_err_t GPIO_write(GPIO_TypeDef *port, const uint8_t pin, const uint8_t on_off) {
+gpio_err_t GPIO_write(const gpio_pin_t pin, const uint8_t on_off) {
+    GPIO_TypeDef *port = _GPIO_fetch_port(pin);
+    if (port == NULL) {
+        return GPIO_PIN_TOO_HIGH;
+    }
     if (on_off == GPIO_OFF) {
-        port->BSRR |= (1 << (pin+16));
+        port->BSRR |= (1 << ((pin % PINS_PER_PORT)+16));
     } else {
-        port->BSRR |= (1 << pin);
+        port->BSRR |= (1 << (pin % PINS_PER_PORT));
     }
     return GPIO_OK;
 }
@@ -144,7 +171,11 @@ gpio_err_t GPIO_write(GPIO_TypeDef *port, const uint8_t pin, const uint8_t on_of
  *
  * @return digital value of pin
  */
-uint8_t GPIO_read_digital(GPIO_TypeDef *port, const uint8_t pin) {
+uint8_t GPIO_read_digital(const gpio_pin_t pin) {
+    GPIO_TypeDef *port = _GPIO_fetch_port(pin);
+    if (port == NULL) {
+        return 0;
+    }
     return (port->IDR & (1 << pin));
 }
 
@@ -158,7 +189,7 @@ uint8_t GPIO_read_digital(GPIO_TypeDef *port, const uint8_t pin) {
  *
  * @return analog value of Pin
  */
-uint16_t GPIO_read_analog(GPIO_TypeDef *port, const uint8_t pin) {
+uint16_t GPIO_read_analog(const gpio_pin_t pin) {
     // TODO
 }
 
@@ -170,11 +201,35 @@ uint16_t GPIO_read_analog(GPIO_TypeDef *port, const uint8_t pin) {
  *
  * @return GPIO_PIN_TOO_HIGH if port is too high, GPIO_OK on success
  */
-gpio_err_t GPIO_lock(GPIO_TypeDef *port, const uint8_t pin) {
-    if ( pin > 15 ) {
+gpio_err_t GPIO_lock(const gpio_pin_t pin) {
+    if ( pin > PH15 ) {
         return GPIO_PIN_TOO_HIGH;
     }
-    port->LCKR |= (1 << pin); 
+    GPIO_TypeDef *port = _GPIO_fetch_port(pin);
+    if (port == NULL) {
+        return GPIO_PIN_TOO_HIGH;
+    }
+    port->LCKR |= (1 << (pin % PINS_PER_PORT)); 
     return GPIO_OK;
 }
 
+
+GPIO_TypeDef *_GPIO_fetch_port(const gpio_pin_t pin) {
+    GPIO_TypeDef *port = NULL;
+    
+
+    if ( pin < PB0 ) {
+        port = GPIOA;
+    } else if ( pin < PC0 ) {
+        port = GPIOB;
+    } else if ( pin < PD0 ) {
+        port = GPIOC;
+    } else if ( pin < PE0) {
+        port = GPIOD;
+    } else if ( pin < PH0 ) {
+        port = GPIOE;
+    } else if ( pin <= PH15 ) {
+        port = GPIOH;
+    }
+    return port; 
+}

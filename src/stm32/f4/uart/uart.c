@@ -10,17 +10,17 @@
 usart_err_t USART_init(USART_TypeDef *USARTx, uint32_t baud, uint32_t mode, uint32_t stop_bits, uint32_t parity_enable, uint32_t parity_even_odd) {
     if (USARTx == USART1) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-        GPIO_enable(USART1_PORT, USART1_RX, GPIO_ALTERNATE); 
-        GPIO_enable(USART1_PORT, USART1_TX, GPIO_ALTERNATE); 
-        GPIO_select_alternate(USART1_PORT, USART1_RX, GPIO_AF07);
-        GPIO_select_alternate(USART1_PORT, USART1_TX, GPIO_AF07);
+        GPIO_enable(USART1_RX, GPIO_ALTERNATE); 
+        GPIO_enable(USART1_TX, GPIO_ALTERNATE); 
+        GPIO_select_alternate(USART1_RX, GPIO_AF07);
+        GPIO_select_alternate(USART1_TX, GPIO_AF07);
         USARTx->BRR = USART_compute_div(USARTx_CLK, baud);
     } else if (USARTx == USART2) {
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-        GPIO_enable(USART2_PORT, USART2_RX, GPIO_ALTERNATE);
-        GPIO_enable(USART2_PORT, USART2_TX, GPIO_ALTERNATE);
-        GPIO_select_alternate(USART2_PORT, USART2_RX, GPIO_AF07);
-        GPIO_select_alternate(USART2_PORT, USART2_TX, GPIO_AF07);
+        GPIO_enable(USART2_RX, GPIO_ALTERNATE);
+        GPIO_enable(USART2_TX, GPIO_ALTERNATE);
+        GPIO_select_alternate(USART2_RX, GPIO_AF07);
+        GPIO_select_alternate(USART2_TX, GPIO_AF07);
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
         USARTx->BRR = USART_compute_div(USART2_CLK, baud);
     }

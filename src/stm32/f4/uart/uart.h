@@ -29,21 +29,22 @@
 #define USART2_CLK  16000000
 #define USARTx_CLK  50000000
 
+
 #define USART1_PORT     GPIOA
 #define USART2_PORT     GPIOA
 #define USART6_PORT     GPIOC
 
-#define USART1_RX       0x0A
-#define USART1_TX       0x09
-#define USART1_CTS      0x0B
-#define USART1_CK       0x08
-#define USART1_RTS      0x0C
+#define USART1_RX       PA10
+#define USART1_TX       PA9
+#define USART1_CTS      PA11
+#define USART1_CK       PA8
+#define USART1_RTS      PA12
 
-#define USART2_CTS      0x00
-#define USART2_RTS      0x01
-#define USART2_TX       0x02
-#define USART2_RX       0x03
-#define USART2_CK       0x04
+#define USART2_CTS      PA0
+#define USART2_RTS      PA1
+#define USART2_TX       PA2
+#define USART2_RX       PA3
+#define USART2_CK       PA4
 
 #define USART_CR2_STOPBITS_OFFSET       0x0C
 #define USART_CR1_WORDLEN_OFFSET        0x0C
