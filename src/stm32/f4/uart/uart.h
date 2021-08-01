@@ -1,22 +1,12 @@
 /* OpenARMs usart.c - USART API
  * @author: SL7
  *
- * Changelog v1:
- *   |__v1.1
- *   |    |__ added basic functionality
- *   |    |__ added read function
- *   |    |__ added write function
- *   |
- *   |__v1.2
- *   |    |__ added USART_printf
- *   |    |__ added USART_scanf
- *   |
- *   |__v1.3
- *   |    |__ 
+ * Changelog v2:
+ *   |__v2.1
+ *   |    |__ changed to USART port struct
  *
- * TODO v1.3:
- * - [ ] improve scanf function
- * - [ ] add interrupt configuration and functionality
+ * TODO v2.2:
+ * - [ ] test functionallity
  *
  */
 
@@ -76,27 +66,52 @@
 #define ENABLE      1
 #define DISABLE     0
 
+typedef struct _USART_port {
+    USART_TypeDef *usart;
+    uint32_t baud;
+    uint32_t mode;
+    uint32_t stop_bits; 
+    uint32_t parity_enable;
+    uint32_t parity_even_odd;
+} USART_port;
+
 
 typedef enum usart_err {
-    USART_OK
+    USART_OK,
+    USART_UNDEFINED,
 } usart_err_t;
 
-usart_err_t USART_init(USART_TypeDef *USARTx, uint32_t baud, uint32_t mode, uint32_t stop_bits, uint32_t parity_enable, uint32_t parity_even_odd);
+usart_err_t USART_init_bak(USART_TypeDef *USARTx, uint32_t baud, uint32_t mode, uint32_t stop_bits, uint32_t parity_enable, uint32_t parity_even_odd);
 uint16_t USART_compute_div(uint32_t periph_clk, uint32_t baud);
 
 
-void USART_write(USART_TypeDef *USARTx, int ch);
-void USART_printf(USART_TypeDef *USARTx, const char *format, ...);
+void USART_write_bak(USART_TypeDef *USARTx, int ch);
+void USART_printf_bak(USART_TypeDef *USARTx, const char *format, ...);
 
-uint8_t USART_read(USART_TypeDef *USARTx);
-void USART_scanf(USART_TypeDef *USARTx, char *buff);
+uint8_t USART_read_bak(USART_TypeDef *USARTx);
+void USART_scanf_bak(USART_TypeDef *USARTx, char *buff);
 
-bool USART_has_input(USART_TypeDef *USARTx);
+bool USART_has_input_bak(USART_TypeDef *USARTx);
 
-void USART_interrupt_enable(USART_TypeDef *USARTx);
-void USART_interrupt_disable(USART_TypeDef *USARTx);
+void USART_interrupt_enable_bak(USART_TypeDef *USARTx);
+void USART_interrupt_disable_bak(USART_TypeDef *USARTx);
 
-void USART_disable(USART_TypeDef *USARTx);
+void USART_disable_bak(USART_TypeDef *USARTx);
 
 
+// NEW FUNCTIONS
+usart_err_t USART_init(USART_port *port);
+
+void USART_write(USART_port *port, int ch);
+void USART_printf(USART_port *port, const char *format, ...);
+
+uint8_t USART_read(USART_port *port);
+void USART_scanf(USART_port *port, char *buff);
+
+bool USART_has_input(USART_port *port);
+
+void USART_interrupt_enable(USART_port *port);
+void USART_interrupt_disable(USART_port *port);
+
+void USART_disable(USART_port *port);
 #endif
