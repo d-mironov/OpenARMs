@@ -36,6 +36,9 @@
 #define USART2_RX       PA3
 #define USART2_CK       PA4
 
+#define USART6_TX       PA11
+#define USART6_RX       PA12
+
 #define USART_CR2_STOPBITS_OFFSET       0x0C
 #define USART_CR1_WORDLEN_OFFSET        0x0C
 #define USART_PARITY_EN_OFFSET          0x0A

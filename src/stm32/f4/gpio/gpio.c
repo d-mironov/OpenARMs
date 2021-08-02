@@ -97,7 +97,7 @@ gpio_err_t GPIO_select_alternate(const gpio_pin_t pin, const uint8_t af) {
  *
  * @return GPIO_OK on success, GPIO_PIN_TOO_HIGH when `pin`>15
  */
-gpio_err_t GPIO_settings(const gpio_pin_t pin, const uint8_t speed, const uint8_t pull_up_down, const uint8_t otyper) {
+gpio_err_t GPIO_settings(const gpio_pin_t pin, const uint8_t speed, const uint8_t pull_up_down, const uint8_t push_pull_open_drain) {
     if (pin > PH15) {
         return GPIO_PIN_TOO_HIGH;
     }
@@ -106,11 +106,12 @@ gpio_err_t GPIO_settings(const gpio_pin_t pin, const uint8_t speed, const uint8_
     if (port == NULL) {
         return GPIO_PIN_TOO_HIGH;
     }
+    
     port->OSPEEDR &=    ~(3 << ((pin & PINS_PER_PORT)*2));
     port->OSPEEDR |=    (speed << ((pin % PINS_PER_PORT)*2));
 
     port->OTYPER &=     ~(1 << (pin % PINS_PER_PORT));
-    port->OTYPER |=     (otyper << (pin % PINS_PER_PORT));
+    port->OTYPER |=     (push_pull_open_drain << (pin % PINS_PER_PORT));
     
     port->PUPDR &=      ~(3 << ((pin % PINS_PER_PORT)*2));
     port->PUPDR |=      (pull_up_down << ((pin % PINS_PER_PORT)*2));

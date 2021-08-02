@@ -23,6 +23,10 @@
 #define GPIO_PULL_UP            0x01
 #define GPIO_PULL_DOWN          0x02
 
+// Push pull/Open drain
+#define GPIO_OUT_PP     0x00
+#define GPIO_OUT_OD     0x01
+
 // Alternate function selection of GPIO
 #define GPIO_AF00       0x00
 #define GPIO_AF01       0x01
@@ -59,8 +63,6 @@
 #define ADC_PC5     0x0F
 
 
-#define GPIO_OUT_PP     0x00
-#define GPIO_OUT_OD     0x01
 
 
 
@@ -117,7 +119,7 @@ typedef enum _gpio_pin_t {
 
 // NEW FUNCTION
 gpio_err_t GPIO_enable(const gpio_pin_t, gpio_mode_t mode);
-gpio_err_t GPIO_settings(const gpio_pin_t, const uint8_t speed, const uint8_t pull_up_down, const uint8_t pupdr);
+gpio_err_t GPIO_settings(const gpio_pin_t, const uint8_t speed, const uint8_t pull_up_down, const uint8_t push_pull_open_drain);
 
 gpio_err_t GPIO_toggle(const gpio_pin_t pin);
 gpio_err_t GPIO_write(const gpio_pin_t pin, const uint8_t on_off);
