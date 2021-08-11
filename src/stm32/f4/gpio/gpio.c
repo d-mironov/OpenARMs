@@ -44,7 +44,11 @@ gpio_err_t GPIO_enable(const gpio_pin_t pin, gpio_mode_t mode) {
         port = GPIOH;
     }
 
-    if (mode == GPIO_ANALOG) {
+    if (mode == GPIO_OUTPUT_PULLUP) {
+        port->PUPDR |= 1 << ((pin % PINS_PER_PORT) * 2); 
+    } else if (mode == GPIO_OUTPUT_PULLDOWN) {
+        port->PUPDR |= 2 << ((pin % PINS_PER_PORT) * 2); 
+    } else if (mode == GPIO_ANALOG) {
         // TODO: analog init
     }
 

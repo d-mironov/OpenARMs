@@ -71,7 +71,9 @@ typedef enum gpio_mode {
     GPIO_INPUT,
     GPIO_OUTPUT,
     GPIO_ALTERNATE,
-    GPIO_ANALOG
+    GPIO_ANALOG,
+    GPIO_OUTPUT_PULLUP,
+    GPIO_OUTPUT_PULLDOWN,
 } gpio_mode_t;
 
 typedef enum gpio_err {
