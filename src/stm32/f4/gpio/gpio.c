@@ -123,6 +123,31 @@ gpio_err_t GPIO_settings(const gpio_pin_t pin, const uint8_t speed, const uint8_
     return GPIO_OK;
 }
 
+
+/**
+ * GPIO Speed setting function
+ *
+ * Set speed of GPIO pin
+ * possible `speed` values: GPIO_LOW_SPEED, GPIO_MEDIUM_SPEED,
+ * GPIO_FAST_SPEED, GPIO_HIGH_SPEED
+ * @param pin - Pin to set speed
+ * @param speed - Speed to set
+ *
+ * @return errorcode
+ *
+ */
+gpio_err_t GPIO_set_speed(const gpio_pin_t pin, const uint8_t speed) {
+    GPIO_TypeDef *port = _GPIO_fetch_port(pin);
+    if (port == NULL) {
+        return GPIO_PIN_TOO_HIGH;
+    }
+    port->OSPEEDR &= ~(3 << ((pin % PINS_PER_PORT) * 2)); 
+    port->OSPEEDR |= (speed << ((pin & PINS_PER_PORT) * 2));
+    return GPIO_OK;
+}
+
+
+
 /**
  * GPIO Toggle function
  *
