@@ -21,6 +21,8 @@ void ADC1_enable(void) {
 gpio_err_t GPIO_enable(const gpio_pin_t pin, gpio_mode_t mode) {
     if ( pin > PH15 ) {
         return GPIO_PIN_TOO_HIGH;
+    } else if (mode > GPIO_OUTPUT_PULLDOWN) {
+        return GPIO_INVALID_SETTING;
     }
     GPIO_TypeDef *port;
 
@@ -140,11 +142,28 @@ gpio_err_t GPIO_set_speed(const gpio_pin_t pin, const uint8_t speed) {
     GPIO_TypeDef *port = _GPIO_fetch_port(pin);
     if (port == NULL) {
         return GPIO_PIN_TOO_HIGH;
+    } else if (speed > GPIO_HIGH_SPEED) {
+        return GPIO_INVALID_SETTING;
     }
     port->OSPEEDR &= ~(3 << ((pin % PINS_PER_PORT) * 2)); 
     port->OSPEEDR |= (speed << ((pin & PINS_PER_PORT) * 2));
     return GPIO_OK;
 }
+
+
+
+gpio_err_t GPIO_set_pull_up_down(const gpio_pin_t pin, const uint8_t pull_up_down) {
+    GPIO_TypeDef *port = _GPIO_fetch_port(pin);
+    if (port == NULL) {
+        return GPIO_PIN_TOO_HIGH;
+    } else if (pull_up_down > GPIO_PULL_DOWN) {
+        return GPIO_INVALID_SETTING;
+    }
+    port->PUPDR &= ~(3 << ((pin % PINS_PER_PORT) * 2));
+    port->PUPDR |= (pull_up_down << ((pin & PINS_PER_PORT) * 2));
+    return GPIO_OK;
+}
+
 
 
 

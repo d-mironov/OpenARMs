@@ -80,7 +80,8 @@ typedef enum gpio_err {
     GPIO_OK,
     GPIO_PIN_TOO_HIGH,
     GPIO_ALTERNATE_FUNC_TOO_HIGH,
-    GPIO_ALTERNATE_NOT_SELECTED
+    GPIO_ALTERNATE_NOT_SELECTED,
+    GPIO_INVALID_SETTING
 } gpio_err_t;
 
 /**
@@ -123,6 +124,7 @@ typedef enum _gpio_pin_t {
 gpio_err_t GPIO_enable(const gpio_pin_t, gpio_mode_t mode);
 gpio_err_t GPIO_settings(const gpio_pin_t, const uint8_t speed, const uint8_t pull_up_down, const uint8_t push_pull_open_drain);
 gpio_err_t GPIO_set_speed(const gpio_pin_t, const uint8_t speed);
+gpio_err_t GPIO_set_pull_up_down(const gpio_pin_t pin, const uint8_t pull_up_down);
 
 gpio_err_t GPIO_toggle(const gpio_pin_t pin);
 gpio_err_t GPIO_write(const gpio_pin_t pin, const uint8_t on_off);
