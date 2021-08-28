@@ -62,6 +62,18 @@ gpio_err_t GPIO_enable(const gpio_pin_t pin, gpio_mode_t mode) {
 }
 
 
+gpio_err_t GPIO_init(gpio_init_t *gpio) {
+    if (GPIO_enable(gpio->pin, gpio->mode) != GPIO_OK) {
+        return GPIO_INVALID_SETTING;
+    }
+    if (GPIO_settings(gpio->pin, gpio->speed, gpio->pull_up_down, gpio->push_pull_open_drain) != 
+            GPIO_OK) {
+        return GPIO_INVALID_SETTING;
+    } 
+    return GPIO_OK;
+}
+
+
 gpio_err_t GPIO_select_alternate(const gpio_pin_t pin, const uint8_t af) {
     if ( pin > PH15 ) {
         return GPIO_PIN_TOO_HIGH;
@@ -106,6 +118,10 @@ gpio_err_t GPIO_select_alternate(const gpio_pin_t pin, const uint8_t af) {
 gpio_err_t GPIO_settings(const gpio_pin_t pin, const uint8_t speed, const uint8_t pull_up_down, const uint8_t push_pull_open_drain) {
     if (pin > PH15) {
         return GPIO_PIN_TOO_HIGH;
+    } else if (speed > GPIO_HIGH_SPEED || 
+            pull_up_down > GPIO_PULL_DOWN || 
+            push_pull_open_drain > 1){
+        return GPIO_INVALID_SETTING;
     }
     
     GPIO_TypeDef *port = _GPIO_fetch_port(pin);
@@ -258,6 +274,7 @@ gpio_err_t GPIO_lock(const gpio_pin_t pin) {
     if (port == NULL) {
         return GPIO_PIN_TOO_HIGH;
     }
+    port->LCKR &= ~(1 << 16);
     port->LCKR |= (1 << (pin % PINS_PER_PORT)); 
     return GPIO_OK;
 }

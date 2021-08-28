@@ -7,8 +7,12 @@
  *
  * TODO v2.2:
  * - [ ] test functionallity
+ * - [ ] Test
  *
  */
+
+
+
 
 #ifndef _STM_UART_H
 #define _STM_UART_H
@@ -23,22 +27,22 @@
 #define USART1_PORT     GPIOA
 #define USART2_PORT     GPIOA
 #define USART6_PORT     GPIOC
-
+// USART1 pins
 #define USART1_RX       PA10
 #define USART1_TX       PA9
 #define USART1_CTS      PA11
 #define USART1_CK       PA8
 #define USART1_RTS      PA12
-
+// USART2 pins
 #define USART2_CTS      PA0
 #define USART2_RTS      PA1
 #define USART2_TX       PA2
 #define USART2_RX       PA3
 #define USART2_CK       PA4
-
+// USART6 pins
 #define USART6_TX       PA11
 #define USART6_RX       PA12
-
+// USART settings
 #define USART_CR2_STOPBITS_OFFSET       0x0C
 #define USART_CR1_WORDLEN_OFFSET        0x0C
 #define USART_PARITY_EN_OFFSET          0x0A
@@ -63,8 +67,24 @@
 
 #define USART_TXE_TIMEOUT       100000
 #define USART_RXNE_TIMEOUT      USART_TXE_TIMEOUT
-
+// USART buffer length
 #define USART_CHAR_BUFFER_LEN   255
+
+// USART TX/RX Stream numbers
+#define USART1_TX_DMA_STREAM  	7
+#define USART1_RX_DMA_STREAM 	5
+#define USART2_TX_DMA_STREAM  	6
+#define USART2_RX_DMA_STREAM 	5
+#define USART6_TX_DMA_STREAM  	7
+#define USART6_RX_DMA_STREAM 	2
+// USARTx DMA channel
+#define USART1_DMA_CHANNEL 	4
+#define USART2_DMA_CHANNEL 	4
+#define USART6_DMA_CHANNEL  5
+// USARTx DMA controller
+#define USART1_DMA 	DMA2
+#define USART2_DMA 	DMA1
+#define USART6_DMA 	DMA2
 
 #define ENABLE      1
 #define DISABLE     0
@@ -76,6 +96,10 @@ typedef struct _USART_port {
     uint32_t stop_bits; 
     uint32_t parity_enable;
     uint32_t parity_even_odd;
+    bool _txeie;
+    bool _rxneie;
+    bool _clken;
+    bool _dmaen;
 } USART_port;
 
 
@@ -84,22 +108,7 @@ typedef enum usart_err {
     USART_UNDEFINED,
 } usart_err_t;
 
-usart_err_t USART_init_bak(USART_TypeDef *USARTx, uint32_t baud, uint32_t mode, uint32_t stop_bits, uint32_t parity_enable, uint32_t parity_even_odd);
 uint16_t USART_compute_div(uint32_t periph_clk, uint32_t baud);
-
-
-void USART_write_bak(USART_TypeDef *USARTx, int ch);
-void USART_printf_bak(USART_TypeDef *USARTx, const char *format, ...);
-
-uint8_t USART_read_bak(USART_TypeDef *USARTx);
-void USART_scanf_bak(USART_TypeDef *USARTx, char *buff);
-
-bool USART_has_input_bak(USART_TypeDef *USARTx);
-
-void USART_interrupt_enable_bak(USART_TypeDef *USARTx);
-void USART_interrupt_disable_bak(USART_TypeDef *USARTx);
-
-void USART_disable_bak(USART_TypeDef *USARTx);
 
 
 // NEW FUNCTIONS
@@ -115,6 +124,18 @@ bool USART_has_input(USART_port *port);
 
 void USART_interrupt_enable(USART_port *port);
 void USART_interrupt_disable(USART_port *port);
+
+void USART_TXE_interrupt_enable(USART_port *port);
+void USART_TXE_interrupt_disable(USART_port *port);
+
+void USART_RXNE_interrupt_enable(USART_port *port);
+void USART_RXNE_interrupt_disable(USART_port *port);
+
+void USART_CLK_enable(USART_port *port);
+void USART_CLK_disable(USART_port *port);
+
+void USART_DMA_enable(USART_port *port);
+void USART_DMA_disable(USART_port *port);
 
 void USART_disable(USART_port *port);
 #endif

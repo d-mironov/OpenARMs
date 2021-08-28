@@ -108,19 +108,15 @@ typedef enum _gpio_pin_t {
     PH8,PH9,PH10,PH11,PH12,PH13,PH14,PH15,
 } gpio_pin_t;
 
+typedef struct _gpio_init_t { 
+    uint8_t pin;
+    uint8_t mode;
+    uint8_t speed;
+    uint8_t pull_up_down;
+    uint8_t push_pull_open_drain;
+} gpio_init_t;
 
-
-
-//gpio_err_t GPIO_enable_bak(GPIO_TypeDef *port, const uint8_t pin_num, gpio_mode_t mode);
-//gpio_err_t GPIO_settings_bak(GPIO_TypeDef *port, const uint8_t pin_num, const uint8_t speed, const uint8_t pull_up_down);
-//gpio_err_t GPIO_toggle_bak(GPIO_TypeDef *port, const uint8_t pin_num);
-//gpio_err_t GPIO_write_bak(GPIO_TypeDef *port, const uint8_t pin_num, const uint8_t on_off);
-//
-//uint8_t GPIO_read_digital_bak(GPIO_TypeDef *port, const uint8_t pin);
-//uint16_t GPIO_read_analog_bak(GPIO_TypeDef *port, const uint8_t pin);
-//gpio_err_t GPIO_select_alternate_bak(GPIO_TypeDef *port, const uint8_t pin, const uint8_t af);
-
-// NEW FUNCTION
+gpio_err_t GPIO_init(gpio_init_t *gpio);
 gpio_err_t GPIO_enable(const gpio_pin_t, gpio_mode_t mode);
 gpio_err_t GPIO_settings(const gpio_pin_t, const uint8_t speed, const uint8_t pull_up_down, const uint8_t push_pull_open_drain);
 gpio_err_t GPIO_set_speed(const gpio_pin_t, const uint8_t speed);
