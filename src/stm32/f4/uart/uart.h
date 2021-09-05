@@ -5,9 +5,6 @@
  *   |__v2.1
  *   |    |__ changed to USART port struct
  *
- * TODO v2.2:
- * - [ ] test functionallity
- * - [ ] Test
  *
  */
 
@@ -110,6 +107,9 @@ typedef enum usart_err {
     USART_UNDEFINED,
 } usart_err_t;
 
+
+static char _send_buff[1024];
+static char _recv_buff[1024];
 
 //static char _uart_buf_write[UART_BUF_SIZE];
 //static char _uart_buf_read[UART_BUF_SIZE];

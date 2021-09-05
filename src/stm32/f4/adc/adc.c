@@ -23,6 +23,7 @@ adc_err_t ADC_init(ADC_port *self) {
 		RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
 		self->port->CR2 &= ~(1U << ADC_CR2_ADON_OFFSET);
 	}
+	self->port->CR2 &= ~(1 << ADC_CR2_SWSTART_OFFSET);
 	volatile int num_conv = 0;
 	for (int i = 1, reg_sub = 0x1F, reg = 3, bit = 0; i <= ADC_NUM_CHANNELS; i++, reg_sub<<=5, bit+=5) {
 		if (reg == 3) {
@@ -60,8 +61,14 @@ adc_err_t ADC_init(ADC_port *self) {
 	} else {
 		self->port->SQR1 |= ((num_conv) << ADC_SQR1_LBIT_OFFSET);
 	}
-	self->port->CR2 |= (1U << ADC_CR2_ADON_OFFSET);
+	if (self->mode == ADC_MODE_SINGLE) {
+		self->port->CR2 &= ~ADC_CONTINUOUS_CONT;
+	} else if (self->mode == ADC_MODE_CONTINUOUS) {
+		self->port->CR2 |= ADC_CONTINUOUS_CONT;
+	}
 
+	self->port->CR2 |= (1U << ADC_CR2_ADON_OFFSET);
+	self->port->CR2 |= (1U << ADC_CR2_SWSTART_OFFSET);
 	return ADC_OK;
 }
 

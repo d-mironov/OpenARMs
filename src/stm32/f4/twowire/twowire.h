@@ -8,8 +8,8 @@
  * |_____v0.1
  * |       |___ added init function (tested)
  * |       |___ added byte read function (tested)
- * |       |___ added burst byte read function (TODO: testing)
- * |       |___ added burst write function (TODO: testing)
+ * |       |___ added burst byte read function
+ * |       |___ added burst write function
  * |       
  *
  * @author: cosmicraccoon (aka Daniel Mironow)

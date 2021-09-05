@@ -51,7 +51,7 @@ gpio_err_t GPIO_enable(const gpio_pin_t pin, gpio_mode_t mode) {
     } else if (mode == GPIO_OUTPUT_PULLDOWN) {
         port->PUPDR |= 2 << ((pin % PINS_PER_PORT) * 2); 
     } else if (mode == GPIO_ANALOG) {
-        // TODO: analog init
+    	// TODO: GPIO analog init
     }
 
     /* Reset the old mode */
@@ -244,19 +244,6 @@ uint8_t GPIO_read_digital(const gpio_pin_t pin) {
     return (port->IDR & (1 << pin));
 }
 
-/**
- * GPIO analog read function
- *
- * Read analog value of GPIO pin
- *
- * @param `port` - Port of pin to read
- * @param `pin` - Pin to read
- *
- * @return analog value of Pin
- */
-uint16_t GPIO_read_analog(const gpio_pin_t pin) {
-    // TODO
-}
 
 /**
  * Lock GPIO configuration 
