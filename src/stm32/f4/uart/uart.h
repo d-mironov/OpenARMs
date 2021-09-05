@@ -86,6 +86,8 @@
 #define USART2_DMA 	DMA1
 #define USART6_DMA 	DMA2
 
+#define USART_BUF_SIZE  	1024
+
 #define ENABLE      1
 #define DISABLE     0
 
@@ -107,6 +109,10 @@ typedef enum usart_err {
     USART_OK,
     USART_UNDEFINED,
 } usart_err_t;
+
+
+//static char _uart_buf_write[UART_BUF_SIZE];
+//static char _uart_buf_read[UART_BUF_SIZE];
 
 uint16_t USART_compute_div(uint32_t periph_clk, uint32_t baud);
 
