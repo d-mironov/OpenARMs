@@ -1,13 +1,18 @@
-/* OpenARMs usart.h - USART HAL
+/* cosmicOS usart.h - USART HAL
  * @author: SL7
  *
  * Changelog v2:
  *   |__v2.1
  *   |    |__ changed to USART port struct
+ *   |    |__ added interrupt setting
+ *   |    |__ added interrupt driven write/printf
+ *   |    |__ ?
  *
- * TODO: select option on interrupt driven
- * TODO: implement interrupt driven usart
- * TODO: write docs
+ *
+ * TODO: [x] select option on interrupt driven
+ * TODO: [x] implement interrupt driven write 
+ * TODO: [ ] implement interrupt driven read 
+ * TODO: [ ] write docs
  */
 
 
@@ -73,8 +78,8 @@
 #define USART_TXE_IE        (1 << 7)
 #define USART_RXNE_IE       (1 << 5)
 
-#define USART_FLAG_TXE      (1 << 7)
-#define USART_FLAG_RXNE     (1 << 5)
+#define USART_FLAG_TXE      (1 << 7)        /*!< USART TX empty flag */
+#define USART_FLAG_RXNE     (1 << 5)        /*!< USART RX not empty flag */
 
 // USART TX/RX Stream numbers
 #define USART1_TX_DMA_STREAM  	7
@@ -92,23 +97,23 @@
 #define USART2_DMA 	DMA1
 #define USART6_DMA 	DMA2
 
-#define USART_BUF_SIZE  	    1024
-#define USART_IT_RX_BUF_SIZE    512        /*!< USART interrupt driven RX buffer size (Must be power of 2!!!)*/
-#define USART_IT_TX_BUF_SIZE    512        /*!< USART interrupt driven TX buffer size (Must be power of 2!!!)*/
+#define USART_BUF_SIZE  	    1024        /*!< USART buffer size for printf */
+#define USART_IT_RX_BUF_SIZE    512         /*!< USART interrupt driven RX buffer size (Must be power of 2!!!)*/
+#define USART_IT_TX_BUF_SIZE    512         /*!< USART interrupt driven TX buffer size (Must be power of 2!!!)*/
 
 
 // Check if interrupt RX buffer is larger than 1 and power of 2
 #if USART_IT_RX_BUF_SIZE < 2
-    #error USART_IT_RX_BUF_SIZE is too small. Needs to be larger than 1
+#error USART_IT_RX_BUF_SIZE is too small. Needs to be larger than 1
 #elif ((USART_IT_RX_BUF_SIZE & (USART_IT_RX_BUF_SIZE-1)) != 0)
-    #error USART_IT_RX_BUF_SIZE must be power of 2.
+#error USART_IT_RX_BUF_SIZE must be power of 2.
 #endif
 
 // Check if interrupt TX buffer is larger than 1 and power of 2
 #if USART_IT_TX_BUF_SIZE < 2
-    #error USART_IT_TX_BUF_SIZE is too small. Needs to be larger than 1
+#error USART_IT_TX_BUF_SIZE is too small. Needs to be larger than 1
 #elif ((USART_IT_TX_BUF_SIZE & (USART_IT_TX_BUF_SIZE-1)) != 0)
-    #error USART_IT_TX_BUF_SIZE must be power of 2.
+#error USART_IT_TX_BUF_SIZE must be power of 2.
 #endif
 
 
@@ -181,7 +186,7 @@ uint16_t USART_compute_div(uint32_t periph_clk, uint32_t baud);
 usart_err_t USART_init(USART_port *port);
 
 usart_err_t USART_write(USART_port *port, int ch);
-void USART_printf(USART_port *port, const char *format, ...);
+usart_err_t USART_printf(USART_port *port, const char *format, ...);
 
 uint8_t USART_read(USART_port *port);
 void USART_scanf(USART_port *port, char *buff);
