@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
+#include <core_cm4.h>
 
 #include "../gpio/gpio.h"
 
@@ -41,6 +42,17 @@ usart_err_t USART_init_bak(USART_TypeDef *USARTx, uint32_t baud, uint32_t mode, 
     return USART_OK;
 }
 
+
+/**
+ * USART
+ * Initializes the USART with the given `port`
+ * `mode`, `stop_bits`, `parity_enable` and `parity_even_odd` can 
+ * remain on the default value if no change is needed.
+ *
+ * @param port USART port with settings
+ *
+ * @return usart_err_t `USART_UNDEFINED` if `port.usart=NULL`, `USART_OK` on success
+ */
 usart_err_t USART_init(USART_port *port) {
     if (port == NULL) {
         return USART_UNDEFINED;
@@ -81,7 +93,18 @@ usart_err_t USART_init(USART_port *port) {
 
     (port->usart)->CR1 |= port->parity_enable | port->parity_even_odd;
     (port->usart)->CR2 |= port->stop_bits;
-
+    if (port->interrupt_driven) {
+        (port->usart)->CR1 |= USART_TXE_IE;
+        (port->usart)->CR1 |= USART_RXNE_IE;
+        if (port->usart == USART1) {
+            NVIC_EnableIRQ(USART1_IRQn);         
+        } else if (port->usart == USART2) {
+            NVIC_EnableIRQ(USART2_IRQn); 
+        } else if (port->usart == USART6) {
+            NVIC_EnableIRQ(USART6_IRQn);
+        }
+    }
+     
     if (port->mode == 0) {
         (port->usart)->CR1 |= USART_RX_TX_MODE;
     } else {
@@ -93,11 +116,60 @@ usart_err_t USART_init(USART_port *port) {
     return USART_OK;
 }
 
-void USART_write(USART_port *port, int ch) {
-    while(!((port->usart)->SR & USART_SR_TXE));
-    (port->usart)->DR = (ch & 0xFF);
+/**
+ * USART write
+ * \brief Blocking USART function call. Sends data when `TXE` bit is set
+ *
+ * @param port Port of USART (needs to be initialized)
+ * @param ch character to write into data-register
+ */
+usart_err_t USART_write(USART_port *port, int ch) {
+    if (!port->interrupt_driven) {
+        while(!((port->usart)->SR & USART_SR_TXE));
+        (port->usart)->DR = (ch & 0xFF);
+        return USART_OK;
+    } else {
+        __usart_it_buf *buf;
+        if (port->usart == USART2) {
+            buf = &__buf_usart2; 
+            buf->tx_buf[ buf->tx_in & (USART_IT_TX_BUF_SIZE-1) ] = ch;
+            buf->tx_in++;
+            if (buf->tx_restart) {
+                buf->tx_restart = 0;
+                USART2->CR1 |= USART_FLAG_TXE;
+            }
+        } else if (port->usart == USART1) {
+            buf = &__buf_usart1; 
+            buf->tx_buf[ buf->tx_in & (USART_IT_TX_BUF_SIZE-1) ] = ch;
+            buf->tx_in++;
+            if (buf->tx_restart) {
+                buf->tx_restart = 0;
+                USART1->CR1 |= USART_FLAG_TXE;
+            }
+    // only available if USART6 is defined
+        }
+    #ifdef USART6
+        else if (port->usart == USART6) {
+            buf = &__buf_usart6; 
+            buf->tx_buf[ buf->tx_in & (USART_IT_TX_BUF_SIZE-1) ] = ch;
+            buf->tx_in++;
+            if (buf->tx_restart) {
+                buf->tx_restart = 0;
+                USART6->CR1 |= USART_FLAG_TXE;
+            }
+        }
+    #endif
+    }
+    return USART_OK;
 }
 
+/**
+ * USART computer divider
+ * Computes divider on given peripheral clock speed and baud rate
+ * 
+ * @param periph_clk clock speed of given USART
+ * @param baud baud rate
+ */
 uint16_t USART_compute_div(uint32_t periph_clk, uint32_t baud) {
     return (periph_clk + (baud/2U)) / baud; 
 }
@@ -203,16 +275,6 @@ bool USART_has_input(USART_port *port) {
 }
 
 
-void USART_interrupt_enable_bak(USART_TypeDef *USARTx) {
-    if (USARTx == USART1) {
-        NVIC_EnableIRQ(USART1_IRQn);
-    } else if (USARTx == USART2) {
-        NVIC_EnableIRQ(USART2_IRQn);
-    } else if (USARTx == USART6) {
-        NVIC_EnableIRQ(USART6_IRQn);
-    }
-}
-
 
 void USART_interrupt_enable(USART_port *port) {
     if (port->usart == USART1) {
@@ -221,18 +283,6 @@ void USART_interrupt_enable(USART_port *port) {
         NVIC_EnableIRQ(USART2_IRQn);
     } else if (port->usart == USART6) {
         NVIC_EnableIRQ(USART6_IRQn);
-    }
-}
-
-
-
-void USART_interrupt_disable_bak(USART_TypeDef *USARTx) {
-    if (USARTx == USART1) {
-        NVIC_DisableIRQ(USART1_IRQn);
-    } else if (USARTx == USART2) {
-        NVIC_DisableIRQ(USART2_IRQn);
-    } else if (USARTx == USART6) {
-        NVIC_DisableIRQ(USART6_IRQn);
     }
 }
 
@@ -271,5 +321,57 @@ void USART_disable(USART_port *port) {
     } else if ( port->usart == USART6 ) {
         RCC->APB1RSTR |= RCC_APB2RSTR_USART6RST;
     }
+    
 }
 
+void USART1_IRQHandler() {
+    //TODO
+    __usart_it_buf *buf;
+    if (USART1->SR & USART_FLAG_TXE) {
+        USART1->SR &= ~USART_FLAG_TXE;
+        buf = &__buf_usart1;
+        if (buf->tx_in != buf->tx_out) {
+            USART1->DR = (buf->tx_buf[ buf->tx_out & (USART_IT_TX_BUF_SIZE-1)] & 0x1FF); 
+            buf->tx_out++;
+            buf->tx_restart = false;
+        } else {
+            buf->tx_restart = true;
+            USART1->CR1 &= ~USART_FLAG_TXE;
+        }
+    }
+}
+
+void USART2_IRQHandler() {
+    //GPIO_toggle(PB8);
+    __usart_it_buf *buf;
+
+    if (USART2->SR & USART_FLAG_TXE) {
+        USART2->SR &= ~USART_FLAG_TXE;
+        buf = &__buf_usart2;
+        if (buf->tx_in != buf->tx_out) {
+            USART2->DR = (buf->tx_buf[ buf->tx_out & (USART_IT_TX_BUF_SIZE-1)] & 0x1FF); 
+            buf->tx_out++;
+            buf->tx_restart = false;
+        } else {
+            buf->tx_restart = true;
+            USART2->CR1 &= ~USART_FLAG_TXE;
+        }
+    }
+}
+
+void USART6_IRQHandler() {
+    //TODO
+    __usart_it_buf *buf;
+    if (USART6->SR & USART_FLAG_TXE) {
+        USART6->SR &= ~USART_FLAG_TXE;
+        buf = &__buf_usart6;
+        if (buf->tx_in != buf->tx_out) {
+            USART6->DR = (buf->tx_buf[ buf->tx_out & (USART_IT_TX_BUF_SIZE-1)] & 0x1FF); 
+            buf->tx_out++;
+            buf->tx_restart = false;
+        } else {
+            buf->tx_restart = true;
+            USART6->CR1 &= ~USART_FLAG_TXE;
+        }
+    }
+}
