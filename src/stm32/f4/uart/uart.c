@@ -132,6 +132,9 @@ usart_err_t USART_write(USART_port *port, int ch) {
         __usart_it_buf *buf;
         if (port->usart == USART2) {
             buf = &__buf_usart2; 
+            if (__USART_IF_BUF_LEN(buf) != USART_OK) {
+                return USART_IT_BUF_FULL;
+            }
             buf->tx_buf[ buf->tx_in & (USART_IT_TX_BUF_SIZE-1) ] = ch;
             buf->tx_in++;
             if (buf->tx_restart) {
@@ -140,6 +143,9 @@ usart_err_t USART_write(USART_port *port, int ch) {
             }
         } else if (port->usart == USART1) {
             buf = &__buf_usart1; 
+            if (__USART_IF_BUF_LEN(buf) != USART_OK) {
+                return USART_IT_BUF_FULL;
+            }
             buf->tx_buf[ buf->tx_in & (USART_IT_TX_BUF_SIZE-1) ] = ch;
             buf->tx_in++;
             if (buf->tx_restart) {
@@ -151,6 +157,9 @@ usart_err_t USART_write(USART_port *port, int ch) {
     #ifdef USART6
         else if (port->usart == USART6) {
             buf = &__buf_usart6; 
+            if (__USART_IF_BUF_LEN(buf) != USART_OK) {
+                return USART_IT_BUF_FULL;
+            }
             buf->tx_buf[ buf->tx_in & (USART_IT_TX_BUF_SIZE-1) ] = ch;
             buf->tx_in++;
             if (buf->tx_restart) {
@@ -324,6 +333,13 @@ void USART_disable(USART_port *port) {
     
 }
 
+
+usart_err_t __USART_IF_BUF_LEN(__usart_it_buf *buf) { 
+    return (buf->tx_in - buf->tx_out >= USART_IT_TX_BUF_SIZE) ?
+        (USART_IT_BUF_FULL) :
+        (USART_OK);
+}
+
 void USART1_IRQHandler() {
     //TODO
     __usart_it_buf *buf;
@@ -360,7 +376,6 @@ void USART2_IRQHandler() {
 }
 
 void USART6_IRQHandler() {
-    //TODO
     __usart_it_buf *buf;
     if (USART6->SR & USART_FLAG_TXE) {
         USART6->SR &= ~USART_FLAG_TXE;

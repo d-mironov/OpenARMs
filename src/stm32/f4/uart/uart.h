@@ -146,6 +146,7 @@ typedef struct {
 typedef enum usart_err {
     USART_OK,               /*!< USART function success */
     USART_UNDEFINED,        /*!< USART port undefined (NULL) */
+    USART_IT_BUF_FULL,      /*!< USART full interrupt mode buffer */
 } usart_err_t;
 
 
@@ -203,5 +204,8 @@ void USART_DMA_enable(USART_port *port);
 void USART_DMA_disable(USART_port *port);
 
 void USART_disable(USART_port *port);
+
+usart_err_t __USART_IF_BUF_LEN(__usart_it_buf *buf);
+
 
 #endif
